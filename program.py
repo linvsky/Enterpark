@@ -78,7 +78,7 @@ class InterparkMonitor(object):
                 do_sms_notify = False
 
             if do_email_notify:
-                long_message = 'Highlight:\n%s\n\n%s' % ('\n'.join(short_messages), ticket_summary)
+                long_message = 'Highlights:\n%s\n\n%s' % ('\n'.join(short_messages), ticket_summary)
                 self.noti_service.send_email('Tickets Changed', long_message)
                 do_email_notify = False
                 short_messages.clear()
@@ -93,8 +93,8 @@ class InterparkMonitor(object):
                     self.noti_service.send_email(subject, ticket_summary)
                     start_time = current_time
 
-                if output_time_delta.seconds > 600:
-                    self.logger.info(ticket_summary)
+                if output_time_delta.seconds > 120:
+                    self.logger.info('Tickets Log per 2 minutes\n%s' % ticket_summary)
                     last_output_time = current_time
 
             time.sleep(self.interval)
@@ -147,10 +147,11 @@ class InterparkMonitor(object):
 def setup_logger(file_log_folder, logger_name):
     logging.getLogger("requests").setLevel(logging.WARNING)
     logger = logging.getLogger(logger_name)
+    logger_formatter = logging.Formatter('%(asctime)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     logger.setLevel(logging.DEBUG)
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setLevel(logging.DEBUG)
-    stdout_handler.setFormatter(logging.Formatter('%(asctime)s: %(message)s'))
+    stdout_handler.setFormatter(logger_formatter)
     stdout_handler.encoding = 'utf-8'
     time_string = time.strftime('%Y-%m-%d %H.%M.%S', time.localtime(time.time()))
 
@@ -159,7 +160,7 @@ def setup_logger(file_log_folder, logger_name):
     log_filename = os.path.join(file_log_folder, '%s.log' % time_string)
     file_handler = logging.FileHandler(log_filename, encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s: %(message)s'))
+    file_handler.setFormatter(logger_formatter)
     file_handler.encoding = 'utf-8'
     logger.addHandler(stdout_handler)
     logger.addHandler(file_handler)
