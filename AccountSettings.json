@@ -1,0 +1,21 @@
+{
+  "EmailReceivers": [
+    "<your email address>"
+  ],
+  "SMSReceivers": [
+    "<your phone number>"
+  ],
+  "EmailAccount": {
+    "SMTP": "<smtp server>",
+    "Username": "<username of your mail>",
+    "Password": "<password of your mail>",
+    "From": "<your email address>"
+  },
+  "AliyunAccount": {
+    "AccessKey": "<your aliyun access key>",
+    "SecretKey": "<your aliyun secret key>",
+    "RegionId": "<your aliyun region ID>",
+    "SignName": "<your aliyun sms sign name>",
+    "TemplateCode": "<your aliyun sms template code>"
+  }
+}
