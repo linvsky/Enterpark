@@ -57,6 +57,9 @@ class AliyunSMS(object):
         request.add_query_param('PhoneNumbers', ','.join([str(phone_number) for phone_number in phone_numbers]))
         request.add_query_param('SignName', self.sign_name)
         request.add_query_param('TemplateCode', self.template_code)
+
+        # Notice that the parameter "code" is from the SMS template your created in Aliyun
+        # Modify to your own parameter(s) which you are using in the SMS template
         request.add_query_param('TemplateParam', "{\"code\":\"%s\"}" % message)
 
         response = client.do_action_with_exception(request)
