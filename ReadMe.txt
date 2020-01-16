@@ -1,4 +1,4 @@
-User Guide of Enterpark (Enter Interpark)
+﻿User Guide of Enterpark (Enter Interpark)
 
 1. Install Python3
      You can download Python3 from https://www.python.org/downloads/release/python-381/
@@ -30,10 +30,11 @@ User Guide of Enterpark (Enter Interpark)
 
 Development Plan of Enterpark
 
-1. Asynchronously send SMS and Email
-2. Identify the transaction by scalper and do not notify on that action
-3. Login feature
-4. Auto order feature
+1. Add query time to notification Email
+2. Asynchronously send SMS and Email
+3. Identify the transaction by scalper and do not notify on that action
+4. Login feature
+5. Auto order feature
 
 
 
