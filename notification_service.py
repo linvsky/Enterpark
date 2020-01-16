@@ -38,17 +38,19 @@ class NotificationService(object):
 
     def send_email(self, subject, message):
         try:
-            response = self.emailSender.send(self.email_receivers, subject, message)
-            if not response:
-                self.logger.info('This Email has been sent:\n%s' % message)
-            else:
-                self.logger.info('This Email has been sent:\n%s\nResponse:\n%s' % (message, response))
+            if self.email_receivers:
+                response = self.emailSender.send(self.email_receivers, subject, message)
+                if not response:
+                    self.logger.info('This Email has been sent:\n%s' % message)
+                else:
+                    self.logger.info('This Email has been sent:\n%s\nResponse:\n%s' % (message, response))
         except Exception as ex:
             self.logger.warning('Exception raised during sending email:\n%s' % repr(ex))
 
     def send_sms(self, message):
         try:
-            response = self.aliyunSMS.send_sms(message, self.sms_receivers)
-            self.logger.info('This SMS has been sent:\n%s\n\nResponse:\n%s' % (message, response))
+            if self.sms_receivers:
+                response = self.aliyunSMS.send_sms(message, self.sms_receivers)
+                self.logger.info('This SMS has been sent:\n%s\n\nResponse:\n%s' % (message, response))
         except Exception as ex:
             self.logger.warning('Exception raised during sending SMS:\n%s' % repr(ex))
