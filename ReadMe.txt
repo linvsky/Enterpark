@@ -1,27 +1,48 @@
-User Guide for Enterpark (Enter Interpark)
+User Guide of Enterpark (Enter Interpark)
+
 1. Install Python3
-     You can download from https://www.python.org/downloads/release/python-381/
+     You can download Python3 from https://www.python.org/downloads/release/python-381/
+
 2. Install dependent Python packages by executing this command:
-     pip install simplejson requests beautifulsoup4 aliyun-python-sdk-core boto3 lxml
-3. Modify IgnoredGoodsCode in InterparkParameters.json to choose which tickets you are not interested in
+     pip3 install simplejson requests beautifulsoup4 aliyun-python-sdk-core boto3 lxml
+     *If pip3 not found then try pip instead
+
+3. Open InterparkParameters.json
+     Modify IgnoredGoodsCode to define which tickets you are not interested in
+
 4. Open AccountSettings.json
      4.1 Modify EmailReceivers and SMSReceivers
      4.2 Modify EmailAccount with your Email account info
      4.3 Modify AliyunAccount with your Aliyun account info (you may need to register Aliyun in advance)
-5. Run Enterpark by executing this command:
+
+5. Run Enterpark in background by executing this command:
      Windows:
-       python3 program.py
+       cd <directory of Enterpark>
+       start /b python3 program.py
      Linux:
        cd <directory of Enterpark>
        nohup python3 program.py > /dev/null 2>&1 &
+     *If python3 not found then try python instead
 
 
 
 
+
+Development Plan of Enterpark
+
+1. Asynchronously send SMS and Email
+2. Identify the transaction by scalper and do not notify on that action
+3. Login feature
+4. Auto order feature
+
+
+
+
+
+Mechanism of getting tickets status from Enterpark
 
 Base URL:
 http://ticket.globalinterpark.com/Global/Play/Goods/GoodsInfoXml.asp
-
 
 # Step 1
 # Input:	GoodsCode, PlaceCode, LanguageType
@@ -29,13 +50,13 @@ http://ticket.globalinterpark.com/Global/Play/Goods/GoodsInfoXml.asp
 GET http://ticket.globalinterpark.com/Global/Play/Goods/GoodsInfoXml.asp?Flag=PlayDate&GoodsCode=19016423&PlaceCode=19001504&OnlyDeliver=&DelyDay=&ExpressDelyDay=&LanguageType=G2001
 
 ##### Example Parameters #####
-Flag	PlayDate
-GoodsCode	19016423
-PlaceCode	19001504
+Flag            PlayDate
+GoodsCode	    19016423
+PlaceCode	    19001504
 OnlyDeliver
 DelyDay
 ExpressDelyDay
-LanguageType	G2001
+LanguageType    G2001
 
 ##### Example Response Body #####
 <NewDataSet>
@@ -53,10 +74,10 @@ LanguageType	G2001
 GET http://ticket.globalinterpark.com/Global/Play/Goods/GoodsInfoXml.asp?Flag=PlaySeq&GoodsCode=19016423&PlaceCode=19001504&PlayDate=20200204&LanguageType=G2001
 
 ##### Example Parameters #####
-Flag	PlaySeq
-GoodsCode	19016423
-PlaceCode	19001504
-PlayDate	20200204
+Flag	        PlaySeq
+GoodsCode	    19016423
+PlaceCode	    19001504
+PlayDate	    20200204
 LanguageType	G2001
 
 ##### Example Response Body #####
@@ -78,10 +99,10 @@ LanguageType	G2001
 GET http://ticket.globalinterpark.com/Global/Play/Goods/GoodsInfoXml.asp?Flag=RemainSeat&GoodsCode=19016423&PlaceCode=19001504&PlaySeq=001&LanguageType=G2001
 
 ##### Example Parameters #####
-Flag	RemainSeat
-GoodsCode	19016423
-PlaceCode	19001504
-PlaySeq	001
+Flag	        RemainSeat
+GoodsCode   	19016423
+PlaceCode   	19001504
+PlaySeq	        001
 LanguageType	G2001
 
 ##### Example Response Body #####
