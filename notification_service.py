@@ -4,7 +4,7 @@ from aliyun_sms import AliyunSMS, AliyunAccountSettings
 
 
 class NotificationService(object):
-    def __init__(self, account_settings, logger):
+    def __init__(self, account_settings, logger, service_name):
         self.account_settings = account_settings
         self.logger = logger
 
@@ -13,7 +13,7 @@ class NotificationService(object):
             email_account_settings.smtp_server,
             email_account_settings.username,
             email_account_settings.password,
-            'Enterpark',
+            service_name,
             email_account_settings.from_email
         )
 
@@ -39,18 +39,20 @@ class NotificationService(object):
     def send_email(self, subject, message):
         try:
             if self.email_receivers:
+                self.logger.debug('Start to send Email')
                 response = self.emailSender.send(self.email_receivers, subject, message)
                 if not response:
-                    self.logger.info('This Email has been sent:\n%s' % message)
+                    self.logger.info('The Email has been sent:\n%s' % message)
                 else:
-                    self.logger.info('This Email has been sent:\n%s\nResponse:\n%s' % (message, response))
+                    self.logger.info('The Email has been sent:\n%s\nResponse:\n%s' % (message, response))
         except Exception as ex:
             self.logger.warning('Exception raised during sending email:\n%s' % repr(ex))
 
     def send_sms(self, message):
         try:
             if self.sms_receivers:
+                self.logger.debug('Start to send SMS')
                 response = self.aliyunSMS.send_sms(message, self.sms_receivers)
-                self.logger.info('This SMS has been sent:\n%s\n\nResponse:\n%s' % (message, response))
+                self.logger.info('The SMS has been sent:\n%s\n\nResponse:\n%s' % (message, response))
         except Exception as ex:
             self.logger.warning('Exception raised during sending SMS:\n%s' % repr(ex))

@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     try:
         interpark_api = InterparkAPI(interpark_parameters)
-        noti_service = NotificationService(account_settings, logger)
+        noti_service = NotificationService(account_settings, logger, 'Enterpark')
         interpark_monitor = InterparkMonitor(interpark_api, noti_service, logger)
         interpark_monitor.run()
     except Exception as ex:
