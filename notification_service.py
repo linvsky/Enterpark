@@ -1,6 +1,7 @@
 # coding=utf-8
 from send_email import EmailSender, EmailAccountSettings
 from aliyun_sms import AliyunSMS, AliyunAccountSettings
+from threading import Thread
 
 
 class NotificationService(object):
@@ -37,6 +38,14 @@ class NotificationService(object):
         return self.account_settings['SMSReceivers']
 
     def send_email(self, subject, message):
+        t = Thread(target=self.async_send_email, args=(subject, message,))
+        t.start()
+
+    def send_sms(self, message):
+        t = Thread(target=self.async_send_sms, args=(message,))
+        t.start()
+
+    def async_send_email(self, subject, message):
         try:
             if self.email_receivers:
                 self.logger.debug('Start to send Email')
@@ -48,7 +57,7 @@ class NotificationService(object):
         except Exception as ex:
             self.logger.warning('Exception raised during sending email:\n%s' % repr(ex))
 
-    def send_sms(self, message):
+    def async_send_sms(self, message):
         try:
             if self.sms_receivers:
                 self.logger.debug('Start to send SMS')
