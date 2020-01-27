@@ -17,5 +17,11 @@
     "RegionId": "<your aliyun region ID>",
     "SignName": "<your aliyun sms sign name>",
     "TemplateCode": "<your aliyun sms template code>"
+  },
+  "AwsAccount": {
+    "AccessKey": "<your aws access key>",
+    "SecretKey": "<your aws access key>",
+    "RegionName": "<your aws region ID>",
+    "TopicARN": "<your aws SNS topic arn>"
   }
 }

@@ -38,7 +38,7 @@ class EmailSender(object):
         self.smtp_obj = None
 
     def connect(self):
-        self.smtp_obj = smtplib.SMTP()
+        self.smtp_obj = smtplib.SMTP(timeout=30)
         self.smtp_obj.connect(self.smtp_server, 25)
         self.smtp_obj.login(self.username, self.password)
         self.connected = True

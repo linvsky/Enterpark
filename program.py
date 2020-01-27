@@ -1,11 +1,12 @@
 # coding=utf-8
-import os, logging, time, datetime, sys
+import os, logging, time, datetime, sys, pytz
 import collections
 import simplejson
 from threading import Thread
 from interpark_api import InterparkAPI
 from notification_service import NotificationService
 
+tz = pytz.timezone("Asia/Shanghai")
 
 class InterparkMonitor(object):
     def __init__(self, interpark_api, noti_service, logger):
@@ -13,17 +14,27 @@ class InterparkMonitor(object):
         self.noti_service = noti_service
         self.logger = logger
         self.monitor_interval = 0
-        self.pending_message = {}
+        self.pending_message = collections.OrderedDict()
         self.pending_message_key_format = 'TICKET:%s_GRADE:%s'
         self.send_message_thread = Thread(target=self.async_send_message)
         self.background_send_flag = True
 
     def async_send_message(self):
+        all_history = []
+        last_email_time = datetime.datetime.now(tz)
         while self.background_send_flag:
-            current_time = datetime.datetime.now()
+            current_time = datetime.datetime.now(tz)
+            summary = ''
             for key, message in self.pending_message.items():
                 if len(message['History']) == 0:
                     continue
+                else:
+                    for history, history_time in zip(message['History'], message['HistoryTime']):
+                        history_full_info = '{0:15}{1}'.format(history_time.strftime('%H:%M:%S'), history)
+                        all_history.append(history_full_info)
+                    summary = message['Summary']
+                    message['History'].clear()
+                    message['HistoryTime'].clear()
 
                 if message['NewAddedCount'] > 0:
                     time_delta = current_time - message['InitialTime']
@@ -32,9 +43,13 @@ class InterparkMonitor(object):
                         message['InitialTime'] = None
                         message['NewAddedCount'] = 0
 
-                email_message = 'Highlights:\n%s\n\n%s' % ('\n'.join(message['History']), message['Summary'])
-                self.noti_service.send_email('Tickets Changed', email_message)
-                message['History'].clear()
+            if len(all_history) > 0:
+                email_time_delta = current_time - last_email_time
+                if email_time_delta.seconds > 0:
+                    last_email_time = current_time
+                    email_message = 'Highlights:\n%s\n\nSummary:\n%s\n' % ('\n'.join(all_history), summary)
+                    self.noti_service.send_email('Enterpark: Tickets Changed', email_message)
+                    all_history.clear()
 
             time.sleep(100)
 
@@ -53,14 +68,15 @@ class InterparkMonitor(object):
         self.send_message_thread.start()
 
         short_messages = []
-        start_time = datetime.datetime.now()
+        start_time = datetime.datetime.now(tz)
         last_output_time = start_time
         last_ticket_matrix = {}
+        has_change = False
 
         try:
             while True:
                 try:
-                    current_check_time = datetime.datetime.now()
+                    current_check_time = datetime.datetime.now(tz)
                     ticket_matrix, seat_names = self.get_ticket_matrix()
 
                     if not last_ticket_matrix:
@@ -80,6 +96,7 @@ class InterparkMonitor(object):
                         key = self.pending_message_key_format % (goods_name, seat_grade)
                         if not key in self.pending_message:
                             self.pending_message[key] = {'History': [],
+                                                         'HistoryTime': [],
                                                          'ID': '%s %s' % (goods_name, seat_names[seat_grade]),
                                                          'Summary': '',
                                                          'InitialTime': None,
@@ -104,7 +121,9 @@ class InterparkMonitor(object):
                         elif remain_count == last_ticket_matrix[goods_name][seat_grade]:
                             continue
 
+                        has_change = True
                         self.pending_message[key]['History'].append(short_message)
+                        self.pending_message[key]['HistoryTime'].append(current_check_time)
                         ticket_summary = InterparkMonitor.print_ticket_matrix(ticket_matrix, seat_names)
                         self.pending_message[key]['Summary'] = ticket_summary
 
@@ -119,8 +138,12 @@ class InterparkMonitor(object):
                     self.noti_service.send_email(subject, ticket_summary)
                     start_time = current_check_time
 
-                if output_time_delta.seconds > 120:
-                    self.logger.info('Tickets Log per 2 minutes\n%s' % ticket_summary)
+                if has_change and output_time_delta.seconds > 60:
+                    self.logger.info('Tickets Change Log in 1 minute\n%s\n' % ticket_summary)
+                    last_output_time = current_check_time
+                    has_change = False
+                elif output_time_delta.seconds > 3600:
+                    self.logger.info('Tickets Status in 1 hour\n%s\n' % ticket_summary)
                     last_output_time = current_check_time
 
                 time.sleep(self.monitor_interval)
