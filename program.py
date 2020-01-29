@@ -8,6 +8,7 @@ from notification_service import NotificationService
 
 tz = pytz.timezone("Asia/Shanghai")
 
+
 class InterparkMonitor(object):
     def __init__(self, interpark_api, noti_service, logger):
         self.interpark_api = interpark_api
@@ -21,10 +22,11 @@ class InterparkMonitor(object):
 
     def async_send_message(self):
         all_history = []
-        last_email_time = datetime.datetime.now(tz)
+        changed = False
+        last_change_time = None
+        summary = ''
         while self.background_send_flag:
             current_time = datetime.datetime.now(tz)
-            summary = ''
             for key, message in self.pending_message.items():
                 if len(message['History']) == 0:
                     continue
@@ -32,6 +34,7 @@ class InterparkMonitor(object):
                     for history, history_time in zip(message['History'], message['HistoryTime']):
                         history_full_info = '{0:15}{1}'.format(history_time.strftime('%H:%M:%S'), history)
                         all_history.append(history_full_info)
+                    changed = True
                     summary = message['Summary']
                     message['History'].clear()
                     message['HistoryTime'].clear()
@@ -44,9 +47,19 @@ class InterparkMonitor(object):
                         message['NewAddedCount'] = 0
 
             if len(all_history) > 0:
-                email_time_delta = current_time - last_email_time
-                if email_time_delta.seconds > 0:
-                    last_email_time = current_time
+                send_now = False
+                if not last_change_time:
+                    send_now = True
+                else:
+                    email_time_delta = current_time - last_change_time
+                    if email_time_delta.seconds > 600:
+                        send_now = True
+
+                if changed:
+                    last_change_time = current_time
+                    changed = False
+
+                if send_now:
                     email_message = 'Highlights:\n%s\n\nSummary:\n%s\n' % ('\n'.join(all_history), summary)
                     self.noti_service.send_email('Enterpark: Tickets Changed', email_message)
                     all_history.clear()
